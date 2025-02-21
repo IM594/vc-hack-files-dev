@@ -4,7 +4,19 @@ function togglePip() {
     data: { action: 'toggle_float_for_top_window' },
   });
 }
-
+function replacePipTooltip() {
+  const divResult = document.evaluate(
+    ".//div[contains(text(), 'Pop')]",
+    document,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null
+  );
+  const div = divResult.singleNodeValue;
+  if (div) {
+    div.textContent = "Toggle Picture-in-Picture";
+  }
+}
 function hackPipInGoogleMeet() {
   document.addEventListener('click', (e) => {
     setTimeout(() => {
@@ -69,6 +81,7 @@ function hackPipInZoom() {
           data: { action: 'toggle_float_for_top_window' },
         });
       }
+      replacePipTooltip();
       observer.disconnect();
     } else if (iframe) {
       const iframeDoc = iframe.contentDocument;
@@ -84,6 +97,7 @@ function hackPipInZoom() {
               data: { action: 'toggle_float_for_top_window' },
             });
           }
+          replacePipTooltip();
           observer.disconnect();
         }
       }
