@@ -6,32 +6,49 @@ function togglePip() {
 }
 
 function hackPipInGoogleMeet() {
-  document.addEventListener('click', () => {
+  document.addEventListener('click', (e) => {
     setTimeout(() => {
       var ulResult = document.evaluate(
-        "//ul[contains(., 'Open picture-in-picture')]",
+        "//ul[contains(., 'picture-in-picture')]",
         document,
         null,
         XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null,
+        null
       );
       var ul = ulResult.singleNodeValue;
 
       if (ul) {
         var liResult = document.evaluate(
-          ".//li[contains(., 'Open picture-in-picture')]",
+          ".//li[contains(., 'picture-in-picture')]",
           ul,
           null,
           XPathResult.FIRST_ORDERED_NODE_TYPE,
-          null,
+          null
         );
         var li = liResult.singleNodeValue;
-        if (li && !li.hasAttribute('jsaction')) {
-          togglePip();
+
+        if (li && !li.hasAttribute('jsaction') && e.target.id === 'vibe-toggle-pip-button') {
+          chrome.runtime.sendMessage({
+            relayToNativePort: true,
+            data: { action: 'toggle_float_for_top_window' },
+          });
         }
         if (li && li.hasAttribute('jsaction')) {
+          const spanResult = document.evaluate(
+            ".//span[contains(text(), 'Open picture-in-picture')]",
+            li,
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null
+          );
+
+          const span = spanResult.singleNodeValue;
+          if (span) {
+            span.textContent = "Toggle picture-in-picture";
+          }
           li.removeAttribute('jsaction');
           li.removeAttribute('delegate-controller');
+          li.setAttribute('id', 'vibe-toggle-pip-button')
         }
       }
     }, 0);
@@ -39,18 +56,40 @@ function hackPipInGoogleMeet() {
 }
 
 function hackPipInZoom() {
-  const iframe = document.querySelector('iframe#webclient');
-  const iframeDoc = iframe.contentDocument;
-  const pipButton = iframeDoc.getElementById('fullscreen-pip-btn');
-  console.log(pipButton);
-  if (pipButton) {
-    pipButton.onclick = null;
-    pipButton.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      togglePip();
-    };
-  }
+  const observer = new MutationObserver((mutationsList, observer) => {
+    const iframe = document.querySelector("iframe#webclient");
+    const btn = document.querySelector("button#fullscreen-pip-btn");
+    if (btn) {
+      btn.onclick = null;
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        chrome.runtime.sendMessage({
+          relayToNativePort: true,
+          data: { action: 'toggle_float_for_top_window' },
+        });
+      }
+      observer.disconnect();
+    } else if (iframe) {
+      const iframeDoc = iframe.contentDocument;
+      if (iframeDoc) {
+        const pipButton = iframeDoc.getElementById("fullscreen-pip-btn");
+        if (pipButton) {
+          pipButton.onclick = null;
+          pipButton.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chrome.runtime.sendMessage({
+              relayToNativePort: true,
+              data: { action: 'toggle_float_for_top_window' },
+            });
+          }
+          observer.disconnect();
+        }
+      }
+    }
+  });
+  observer.observe(document, { childList: true, subtree: true });
 }
 
 function _main_() {
