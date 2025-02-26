@@ -4,7 +4,10 @@ function togglePip() {
     data: { action: 'toggle_float_for_top_window' },
   });
 }
-function replacePipTooltip() {
+function replacePipTooltip(document) {
+  if (!document || !document.evaluate) {
+    return;
+  }
   const divResult = document.evaluate(
     ".//div[contains(text(), 'Pop')]",
     document,
@@ -81,8 +84,7 @@ function hackPipInZoom() {
           data: { action: 'toggle_float_for_top_window' },
         });
       }
-      replacePipTooltip();
-      observer.disconnect();
+      replacePipTooltip(document);
     } else if (iframe) {
       const iframeDoc = iframe.contentDocument;
       if (iframeDoc) {
@@ -97,8 +99,7 @@ function hackPipInZoom() {
               data: { action: 'toggle_float_for_top_window' },
             });
           }
-          replacePipTooltip();
-          observer.disconnect();
+          replacePipTooltip(iframeDoc);
         }
       }
     }
