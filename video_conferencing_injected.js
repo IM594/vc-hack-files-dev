@@ -24,7 +24,7 @@ function hackPipInGoogleMeet() {
   document.addEventListener('click', (e) => {
     setTimeout(() => {
       var ulResult = document.evaluate(
-       "//ul[contains(., 'picture-in-picture') or contains(., '画中画') or contains(., 'imagen en imagen')",
+       "//ul[contains(., 'picture-in-picture') or contains(., '画中画') or contains(., 'imagen en imagen')]",
         document,
         null,
         XPathResult.FIRST_ORDERED_NODE_TYPE,
